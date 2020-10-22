@@ -1,3 +1,12 @@
+This Fork
+===========
+
+We create samba public share by allowing guest, however, latest win10 refuses to access as guest. 
+
+To create a public samba share for latest win10, we must reply "OK" to every possible username+password combination!
+
+This repo successfully fucked win10, to make sambaPublicShare great again. 
+
 About Samba
 ===========
 
