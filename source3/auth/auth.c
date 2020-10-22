@@ -206,6 +206,7 @@ NTSTATUS auth_check_ntlm_password(TALLOC_CTX *mem_ctx,
 	if (auth_context->challenge.length != 8) {
 		DEBUG(0, ("check_ntlm_password:  Invalid challenge stored for this auth context - cannot continue\n"));
 		nt_status = NT_STATUS_LOGON_FAILURE;
+                DEBUG(0, ("RD: 111"));
 		goto fail;
 	}
 
@@ -229,6 +230,7 @@ NTSTATUS auth_check_ntlm_password(TALLOC_CTX *mem_ctx,
 	if (!check_domain_match(user_info->client.account_name,
 				user_info->mapped.domain_name)) {
 		nt_status = NT_STATUS_LOGON_FAILURE;
+                DEBUG(0, ("RD: 122"));
 		goto fail;
 	}
 
@@ -255,13 +257,14 @@ NTSTATUS auth_check_ntlm_password(TALLOC_CTX *mem_ctx,
 	}
 
 	if (!NT_STATUS_IS_OK(nt_status)) {
-		DBG_INFO("%s authentication for user [%s] FAILED with "
+		printf("%s authentication for user [%s] FAILED with "
 			 "error %s, authoritative=%u\n",
 			 auth_method_name,
 			 user_info->client.account_name,
 			 nt_errstr(nt_status),
 			 *pauthoritative);
-		goto fail;
+                DEBUG(0, ("RD: 333"));
+                goto fail;
 	}
 
 	DBG_NOTICE("%s authentication for user [%s] succeeded\n",
@@ -279,6 +282,7 @@ NTSTATUS auth_check_ntlm_password(TALLOC_CTX *mem_ctx,
 				user_info->remote_host, talloc_tos());
 			if (rhost == NULL) {
 				nt_status = NT_STATUS_NO_MEMORY;
+                DEBUG(0, ("RD: 33311"));
 				goto fail;
 			}
 		} else {
@@ -301,6 +305,8 @@ NTSTATUS auth_check_ntlm_password(TALLOC_CTX *mem_ctx,
 	}
 
 	if (!NT_STATUS_IS_OK(nt_status)) {
+                // DBG_INFO("RECOLIC forced this authentication to SUCCEED!");
+                DEBUG(0, ("RD: 32221"));
 		goto fail;
 	}
 
