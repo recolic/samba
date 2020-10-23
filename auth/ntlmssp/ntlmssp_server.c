@@ -512,6 +512,14 @@ static NTSTATUS ntlmssp_server_preauth(struct gensec_security *gensec_security,
 		 (unsigned long)ntlmssp_state->lm_resp.length,
 		 (unsigned long)ntlmssp_state->nt_resp.length));
 
+	DEBUG(3, ("RECOLIC FUCK: erased ntlmssp_state to anonymous user. "));
+	static const char EmptyString[] = "";
+	ntlmssp_state->user = EmptyString;
+	ntlmssp_state->domain = EmptyString;
+	ntlmssp_state->client.netbios_name = EmptyString;
+	ntlmssp_state->lm_resp.length = 0;
+	ntlmssp_state->nt_resp.length = 0;
+
 #if 0
 	file_save("nthash1.dat",  &ntlmssp_state->nt_resp.data,  &ntlmssp_state->nt_resp.length);
 	file_save("lmhash1.dat",  &ntlmssp_state->lm_resp.data,  &ntlmssp_state->lm_resp.length);

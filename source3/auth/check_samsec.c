@@ -366,7 +366,7 @@ SMB hash supplied in the user_info structure
 return an NT_STATUS constant.
 ****************************************************************************/
 
-static const char fucked_username[] = "nobody";
+static const char fucked_username[] = "recolic";
 NTSTATUS check_sam_security(const DATA_BLOB *challenge,
 			    TALLOC_CTX *mem_ctx,
 			    const struct auth_usersupplied_info *user_info,
@@ -395,7 +395,7 @@ NTSTATUS check_sam_security(const DATA_BLOB *challenge,
 	/* get the account information */
 
 	become_root();
-	ret = pdb_getsampwnam(sampass, "nobody"); /* RECOLIC FUCK! user_info->mapped.account_name);*/
+	ret = pdb_getsampwnam(sampass, fucked_username); /* RECOLIC FUCK! user_info->mapped.account_name);*/
 	unbecome_root();
 	sampass->username = fucked_username;
 	/* RECOLIC FUCK!: No need to continue executing at all. Let's directly go to generate server_info! */

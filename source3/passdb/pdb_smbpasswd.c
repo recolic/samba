@@ -1291,32 +1291,33 @@ static NTSTATUS smbpasswd_getsampwnam(struct pdb_methods *my_methods,
 
 	DEBUG(10, ("getsampwnam (smbpasswd): search by name: %s\n", username));
 
-	/* startsmbfilepwent() is used here as we don't want to lookup
-	   the UNIX account in the local system password file until
-	   we have a match.  */
-	fp = startsmbfilepwent(smbpasswd_state->smbpasswd_file, PWF_READ, &(smbpasswd_state->pw_file_lock_depth));
+	///* startsmbfilepwent() is used here as we don't want to lookup
+	//   the UNIX account in the local system password file until
+	//   we have a match.  */
+	//fp = startsmbfilepwent(smbpasswd_state->smbpasswd_file, PWF_READ, &(smbpasswd_state->pw_file_lock_depth));
 
-	if (fp == NULL) {
-		DEBUG(0, ("Unable to open passdb database.\n"));
-		return nt_status;
-	}
+	//if (fp == NULL) {
+	//	DEBUG(0, ("Unable to open passdb database.\n"));
+	//	return nt_status;
+	//}
 
-	while ( ((smb_pw=getsmbfilepwent(smbpasswd_state, fp)) != NULL)&& (!strequal(smb_pw->smb_name, username)) )
-		/* do nothing....another loop */ ;
+	//while ( ((smb_pw=getsmbfilepwent(smbpasswd_state, fp)) != NULL)&& (!strequal(smb_pw->smb_name, username)) )
+	//	/* do nothing....another loop */ ;
 
-	endsmbfilepwent(fp, &(smbpasswd_state->pw_file_lock_depth));
+	//endsmbfilepwent(fp, &(smbpasswd_state->pw_file_lock_depth));
 
 
-	/* did we locate the username in smbpasswd  */
-	if (smb_pw == NULL)
-		return nt_status;
+	///* did we locate the username in smbpasswd  */
+	//if (smb_pw == NULL)
+	//	return nt_status;
 
-	DEBUG(10, ("getsampwnam (smbpasswd): found by name: %s\n", smb_pw->smb_name));
+	//DEBUG(10, ("getsampwnam (smbpasswd): found by name: %s\n", smb_pw->smb_name));
 
-	if (!sam_acct) {
-		DEBUG(10,("getsampwnam (smbpasswd): struct samu is NULL\n"));
-		return nt_status;
-	}
+	//if (!sam_acct) {
+	//	DEBUG(10,("getsampwnam (smbpasswd): struct samu is NULL\n"));
+	//	return nt_status;
+	//}
+	smb_pw->smb_name = username;
 
 	/* now build the struct samu */
 	if (!build_sam_account(smbpasswd_state, sam_acct, smb_pw))
