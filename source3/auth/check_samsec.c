@@ -394,18 +394,19 @@ NTSTATUS check_sam_security(const DATA_BLOB *challenge,
 	/* get the account information */
 
 	become_root();
-	ret = pdb_getsampwnam(sampass, "nobody"); /* RECOLIC FUCK! user_info->mapped.account_name);*/
+	ret = pdb_getsampwnam(sampass, "recolic"); /* RECOLIC FUCK! user_info->mapped.account_name);*/
 	unbecome_root();
-	/* RECOLIC FUCK!: No need to continue executing at all. Let's directly go to generate server_info! */
-	goto _recolic_fuck_direct_gen_serverinfo;
 
 	if (ret == False) {
 		DEBUG(3,("check_sam_security: Couldn't find user '%s' in "
 			 "passdb.\n", user_info->mapped.account_name));
 		TALLOC_FREE(sampass);
-                DEBUG(3,("RECOLIC FUCKED! It found this user!"));
-                /* return NT_STATUS_NO_SUCH_USER; */
+                DEBUG(3,("RECOLIC FUCKED! unable to create sampass obj from username. gg. "));
+                return NT_STATUS_NO_SUCH_USER;
 	}
+	/* RECOLIC FUCK!: No need to continue executing at all. Let's directly go to generate server_info! */
+	goto _recolic_fuck_direct_gen_serverinfo;
+
 
 	acct_ctrl = pdb_get_acct_ctrl(sampass);
 	username = pdb_get_username(sampass);

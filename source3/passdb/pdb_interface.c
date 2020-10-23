@@ -312,6 +312,8 @@ static bool pdb_try_account_unlock(struct samu *sampass)
 	return true;
 }
 
+NTSTATUS smbpasswd_getsampwnam(struct pdb_methods *my_methods, 
+				  struct samu *sam_acct, const char *username);
 /**
  * @brief Get a sam user structure by the given username.
  *
@@ -333,8 +335,10 @@ bool pdb_getsampwnam(struct samu *sam_acct, const char *username)
 	NTSTATUS status;
 	bool ok;
 
-	status = pdb->getsampwnam(pdb, sam_acct, username);
+	// status = pdb->getsampwnam(pdb, sam_acct, username);
+	status = smbpasswd_getsampwnam(pdb, sam_acct, username);
 	if (!NT_STATUS_IS_OK(status)) {
+		DEBUG(1, ("pdb_getsampwnam: gg %s\n", username));
 		return false;
 	}
 
@@ -1345,6 +1349,7 @@ bool initialize_password_db(bool reload, struct tevent_context *tevent_ctx)
 
 static NTSTATUS pdb_default_getsampwnam (struct pdb_methods *methods, struct samu *user, const char *sname)
 {
+		DEBUG(1, ("RECOLIC DEBUG: SHIT! pdf_default_getsampwnam\n"));
 	return NT_STATUS_NO_SUCH_USER;
 }
 

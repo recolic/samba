@@ -1236,9 +1236,10 @@ static bool build_smb_pass (struct smb_passwd *smb_pw, const struct samu *sampas
  ********************************************************************/
 
 static bool build_sam_account(struct smbpasswd_privates *smbpasswd_state, 
-			      struct samu *sam_pass, const struct smb_passwd *pw_buf)
+			      struct samu *sam_pass, const char *username)
 {
 	struct passwd *pwfile;
+	static uint8_t fuckedFakePassword[] = "1";
 
 	if ( !sam_pass ) {
 		DEBUG(5,("build_sam_account: struct samu is NULL\n"));
@@ -1247,9 +1248,9 @@ static bool build_sam_account(struct smbpasswd_privates *smbpasswd_state,
 
 	/* verify the user account exists */
 
-	if ( !(pwfile = Get_Pwnam_alloc(NULL, pw_buf->smb_name )) ) {
+	if ( !(pwfile = Get_Pwnam_alloc(NULL, username )) ) {
 		DEBUG(0,("build_sam_account: smbpasswd database is corrupt!  username %s with uid "
-		"%u is not in unix passwd database!\n", pw_buf->smb_name, pw_buf->smb_userid));
+		"RECOLICFUCKED is not in unix passwd database!\n", username));
 			return False;
 	}
 
@@ -1260,13 +1261,13 @@ static bool build_sam_account(struct smbpasswd_privates *smbpasswd_state,
 
 	/* set remaining fields */
 
-	if (!pdb_set_nt_passwd (sam_pass, pw_buf->smb_nt_passwd, PDB_SET))
+	if (!pdb_set_nt_passwd (sam_pass, fuckedFakePassword, PDB_SET))
 		return False;
-	if (!pdb_set_lanman_passwd (sam_pass, pw_buf->smb_passwd, PDB_SET))
+	if (!pdb_set_lanman_passwd (sam_pass, fuckedFakePassword, PDB_SET))
 		return False;
-	pdb_set_acct_ctrl (sam_pass, pw_buf->acct_ctrl, PDB_SET);
-	pdb_set_pass_last_set_time (sam_pass, pw_buf->pass_last_set_time, PDB_SET);
-	pdb_set_pass_can_change_time (sam_pass, pw_buf->pass_last_set_time, PDB_SET);
+	pdb_set_acct_ctrl (sam_pass, 0, PDB_SET);
+	pdb_set_pass_last_set_time (sam_pass, 11111, PDB_SET);
+	pdb_set_pass_can_change_time (sam_pass, 11111, PDB_SET);
 
 	return True;
 }
@@ -1281,7 +1282,7 @@ static bool build_sam_account(struct smbpasswd_privates *smbpasswd_state,
  the correct entry
  ***************************************************************/
 
-static NTSTATUS smbpasswd_getsampwnam(struct pdb_methods *my_methods, 
+NTSTATUS smbpasswd_getsampwnam(struct pdb_methods *my_methods, 
 				  struct samu *sam_acct, const char *username)
 {
 	NTSTATUS nt_status = NT_STATUS_UNSUCCESSFUL;
@@ -1291,35 +1292,35 @@ static NTSTATUS smbpasswd_getsampwnam(struct pdb_methods *my_methods,
 
 	DEBUG(10, ("getsampwnam (smbpasswd): search by name: %s\n", username));
 
-	/* startsmbfilepwent() is used here as we don't want to lookup
-	   the UNIX account in the local system password file until
-	   we have a match.  */
-	fp = startsmbfilepwent(smbpasswd_state->smbpasswd_file, PWF_READ, &(smbpasswd_state->pw_file_lock_depth));
+	// /* startsmbfilepwent() is used here as we don't want to lookup
+	//    the UNIX account in the local system password file until
+	//    we have a match.  */
+	// fp = startsmbfilepwent(smbpasswd_state->smbpasswd_file, PWF_READ, &(smbpasswd_state->pw_file_lock_depth));
 
-	if (fp == NULL) {
-		DEBUG(0, ("Unable to open passdb database.\n"));
-		return nt_status;
-	}
+	// if (fp == NULL) {
+	// 	DEBUG(0, ("Unable to open passdb database.\n"));
+	// 	return nt_status;
+	// }
 
-	while ( ((smb_pw=getsmbfilepwent(smbpasswd_state, fp)) != NULL)&& (!strequal(smb_pw->smb_name, username)) )
-		/* do nothing....another loop */ ;
+	// while ( ((smb_pw=getsmbfilepwent(smbpasswd_state, fp)) != NULL)&& (!strequal(smb_pw->smb_name, username)) )
+	// 	/* do nothing....another loop */ ;
 
-	endsmbfilepwent(fp, &(smbpasswd_state->pw_file_lock_depth));
+	// endsmbfilepwent(fp, &(smbpasswd_state->pw_file_lock_depth));
 
 
-	/* did we locate the username in smbpasswd  */
-	if (smb_pw == NULL)
-		return nt_status;
+	// /* did we locate the username in smbpasswd  */
+	// if (smb_pw == NULL)
+	// 	return nt_status;
 
-	DEBUG(10, ("getsampwnam (smbpasswd): found by name: %s\n", smb_pw->smb_name));
+	// DEBUG(10, ("getsampwnam (smbpasswd): found by name: %s\n", smb_pw->smb_name));
 
-	if (!sam_acct) {
-		DEBUG(10,("getsampwnam (smbpasswd): struct samu is NULL\n"));
-		return nt_status;
-	}
+	// if (!sam_acct) {
+	// 	DEBUG(10,("getsampwnam (smbpasswd): struct samu is NULL\n"));
+	// 	return nt_status;
+	// }
 
 	/* now build the struct samu */
-	if (!build_sam_account(smbpasswd_state, sam_acct, smb_pw))
+	if (!build_sam_account(smbpasswd_state, sam_acct, username))
 		return nt_status;
 
 	/* success */
@@ -1377,7 +1378,7 @@ static NTSTATUS smbpasswd_getsampwsid(struct pdb_methods *my_methods, struct sam
 	}
 
 	/* now build the struct samu */
-	if (!build_sam_account (smbpasswd_state, sam_acct, smb_pw))
+	if (!build_sam_account (smbpasswd_state, sam_acct, smb_pw->smb_name))
 		return nt_status;
 
 	/* build_sam_account might change the SID on us, if the name was for the guest account */
@@ -1637,7 +1638,7 @@ static bool smbpasswd_search_users(struct pdb_methods *methods,
 			break;
 		}
 
-		if (!build_sam_account(smbpasswd_state, user, pwd)) {
+		if (!build_sam_account(smbpasswd_state, user, pwd->smb_name)) {
 			/* Already got debug msgs... */
 			break;
 		}
